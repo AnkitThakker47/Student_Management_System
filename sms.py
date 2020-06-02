@@ -11,27 +11,23 @@ import lxml
 
 
 def alter(msg):
-	if msg.find(',') != -1 or msg.find(';') != -1:
-		motd = msg.replace(',' , '\n')
-		motd = msg.replace(';' , '\n')
-	else:
-		motd, i, j = '', 0, 0
-		mesappend = ''
-		val = msg.rfind('-')
-		partone = msg[0:val]
-		parttwo = msg[val:]
-		#print(partone,'\n',parttwo)
-		for k in partone:
-			#print(k)
-			if k  == ' ' and j % 6 == 0:
-				mesappend = mesappend + k + '\n'
-				j += 1
-			elif k == ' ':
-				mesappend = mesappend + k
-				j += 1
-			else:
-				mesappend = mesappend + k
-		motd = mesappend + '\n' + parttwo
+	motd, i, j = '', 0, 0
+	mesappend = ''
+	val = msg.rfind('-')
+	partone = msg[0:val]
+	parttwo = msg[val:]
+	#print(partone,'\n',parttwo)
+	for k in partone:
+		#print(k)
+		if k  == ' ' and j % 6 == 0:
+			mesappend = mesappend + k + '\n'
+			j += 1
+		elif k == ' ':
+			mesappend = mesappend + k
+			j += 1
+		else:
+			mesappend = mesappend + k
+	motd = mesappend + '\n' + parttwo
 	#print(motd)
 	return motd
 def f1():
@@ -241,31 +237,44 @@ def f12():
 
 
 info, qotd = '',''
-try:
-	socket.create_connection(("www.google.com", 80))
-	res = requests.get("https://ipinfo.io")
-	data = res.json()
-	city_name = data['city']
-	a1 = "http://api.openweathermap.org/data/2.5/weather?units=metric"
-	a2 = "&q=" + city_name 
-	a3 = "&appid=c6e315d09197cec231495138183954bd"
-	res = requests.get(a1 + a2 + a3)
-	data = res.json()
-	temp = data['main']['temp']
-	info = "Location: " + str(city_name) + "\tTemprature: " + str(temp)
-	res = requests.get("https://www.brainyquote.com/quote_of_the_day")
-	soup = bs4.BeautifulSoup(res.text,'lxml')
-	data = soup.find("img", {"class": "p-qotd"})
-	msg = data['alt']
-	msg = alter(msg)
-	qotd = "QOTD: " + str(msg)
-except Exception as e:
-	showerror("Connection issue",e)
-	print(e)
+
+def getdata():
+	info, qotd = '',''
+	def modify_city(name):
+		uni_replace = {'\u0100':'A','\u0101':'a','\u0112':"E",'\u0113':'e','\u012a':'I','\u012b':'i','\u014c':'O','\u014d':'o','\u016a':'U','\u016b':'u','\u0232':'Y','\u0233':'y'}
+		for i in uni_replace:
+			name = name.replace(i,uni_replace[i])
+		return name
+	try:
+		socket.create_connection(("www.google.com", 80))
+		res = requests.get("https://ipinfo.io")
+		data = res.json()
+		city_name = data['city']
+		city_name = modify_city(city_name)
+		a1 = "http://api.openweathermap.org/data/2.5/weather?units=metric"
+		a2 = "&q=" + city_name 
+		a3 = "&appid=c6e315d09197cec231495138183954bd"
+		res = requests.get(a1 + a2 + a3)
+		data = res.json()
+		temp = data['main']['temp']
+		info = "Location: " + str(city_name) + "\tTemprature: " + str(temp)
+		res = requests.get("https://www.brainyquote.com/quote_of_the_day")
+		soup = bs4.BeautifulSoup(res.text,'lxml')
+		data = soup.find("img", {"class": "p-qotd"})
+		msg = data['alt']
+		msg = alter(msg)
+		qotd = "QOTD: " + str(msg)
+	except socket.gaierror as e:
+		showerror("Connection Issue","Please check your internet connection")
+	except Exception as e:
+		showerror("Connection issue",e)
+		#print(e)
+	finally:
+		return info,qotd
 
 root = Tk()
 root.title("Student Management System")
-root.geometry("508x550+400+25")
+root.geometry("508x575+400+25")
 root.configure(background = "#B8CDCD")
 
 
@@ -273,7 +282,7 @@ btnAdd = Button(root, text="Add", font = ("Arial", 18, "bold"), width = 10,comma
 btnView = Button(root, text="View", font = ("Arial", 18, "bold"), width = 10,command = f2)
 btnUpdate = Button(root, text="Update", font = ("Arial", 18, "bold"), width = 10, command = f5)
 btnDelete = Button(root, text="Delete", font = ("Arial", 18, "bold"), width = 10, command = f7)
-btnCharts = Button(root, text="Charts", font = ("Arial", 18, "bold"), width = 10, command = f9)
+btnCharts = Button(root, text="Charts", font = ("Arial", 18, "bold"), width = 10, command = f9);info,qotd = getdata()
 lblInfo = Label(root, text = info, font = ('Arial', 18, 'bold'), borderwidth = 1, bg = "#B8CDCD", relief = "solid")
 lblQotd = Label(root, text = qotd, font = ('Arial', 18, 'bold'), borderwidth = 1, bg = "#B8CDCD", relief = "solid")
 btnAdd.pack(pady = 10)
