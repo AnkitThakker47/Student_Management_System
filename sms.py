@@ -85,7 +85,7 @@ def f9():
 	try:
 		con = connect("stu_test.db")
 		cursor = con.cursor()
-		sql = "SELECT * FROM student ORDER BY marks LIMIT 5"
+		sql = "SELECT * FROM student ORDER BY marks DESC LIMIT 5"
 		data = cursor.execute(sql)
 		for d in data:
 			student.append(d[1])
@@ -120,6 +120,9 @@ def f10():
 		if len(name) < 2:
 			nameEnter.delete(0, END)
 			raise Exception("Length of name should not be less than 2")
+		if not name.isalpha():
+			nameEnter.delete(0, END)
+			raise Exception("Name should contain only alphabets")
 		if marksEnter.get() == '':
 			raise Exception("Marks cannot be empty")
 		if not marksEnter.get().isdigit():
